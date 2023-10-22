@@ -2,7 +2,6 @@ require("dotenv").config();
 const express = require("express");
 const TelegramBot = require("node-telegram-bot-api");
 var web3 = require("web3");
-let _web3 = new web3(new web3.providers.HttpProvider(rpc_url));
 const app = express();
 let fs = require("fs");
 // contractAbi = require("./contract1.json");
@@ -12,6 +11,7 @@ isStarted = false;
 const { parse } = require("path");
 lastBlockScanned = currentBlockNumber;
 const rpc_url = process.env.RPC_URL;
+let _web3 = new web3(new web3.providers.HttpProvider(rpc_url));
 const TELEGRAM_BOT_TOKEN = process.env.TOKEN;
 const allowedAdminId = Number(process.env.ALLOWED_USER_ID);
 eventDecodeLog = [
@@ -249,7 +249,7 @@ const FetchContractBot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
 // Listen for the /start command
 FetchContractBot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
-  // console.log("chatId", chatId)
+  console.log("chatId", chatId)
   const AdminId = msg.from.id;
   const Monitor_Address = null;
   console.log("AdminId", AdminId);
@@ -383,8 +383,8 @@ async function getContractInfo(address) {
     delete sellTax["__length__"];
     info.ContractAddress = address;
     info.TokenName = name;
-    info._maxTaxSwap = sellTax;
-    info._maxTxAmount = buyTax;
+    info.sellTax = sellTax;
+    info.buyTax = buyTax;
     console.log(info);
   } catch (error) {
     info.isRequiredContract = false;

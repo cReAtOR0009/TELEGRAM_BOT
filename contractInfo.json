@@ -10291,3 +10291,4 @@
 {"isRequiredContract":true,"ContractAddress":"0x584d4b86f4ad82f9d58a2a8f24a37f400c72c409","TokenName":"UNI INU","_maxTaxSwap":"1700000000000000","_maxTxAmount":"2000000000000000","liquidity":"0. Ether","from":"0x8056fa040f4d1c04fd4d81af5e19822eb9d51da9","hash":"0x1ba4353790f359922564d56e29fe73f66be63457a9f7f505d9f0e154f0cc0350","maxGwei":"6.075677677"}
 {"isRequiredContract":false,"liquidity":"0. Ether","from":"0xf4013332da53b1ff4ebf21801eb7589b5b71f2f6","hash":"0x89257272a39317f41a1b8b6ad75e6a25a73d86b9a42a4b0f2e3f94369629902f","maxGwei":"10.940446557"}
 {"isRequiredContract":false,"liquidity":"0. Ether","from":"0x3c374bc5262e84645e749ba3fd12411a970c1d1e","hash":"0x7a9466be4a7756e00f2063dfa6e195a4be7d5b6f8c48f9542adae0d133a6db4d","maxGwei":"6.807560569"}
+{"isRequiredContract":false,"liquidity":"0. Ether","from":"0xbe450b6538f071bf997a69f30d9d443dcd20db4c","hash":"0x9ba7de1b579e05f6159e4dfbb2181a830511b642d49401a7e51cd3face0ff3c7","maxGwei":"7.176952485"}
