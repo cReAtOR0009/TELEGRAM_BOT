@@ -1,0 +1,22 @@
+{
+  "name": "telegram_bot",
+  "version": "1.0.0",
+  "description": "A Telegram bot that fetches blockchain data for deployed contracts",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Creator",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.5.1",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "fs": "^0.0.1-security",
+    "node-telegram-bot-api": "^0.63.0",
+    "nodemon": "^3.0.1",
+    "web3": "^4.0.1-alpha.5"
+  }
+}
