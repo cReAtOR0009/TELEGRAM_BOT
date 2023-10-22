@@ -5,6 +5,7 @@ var web3 = require("web3");
 let _web3 = new web3(new web3.providers.HttpProvider(rpc_url));
 const app = express();
 let fs = require("fs");
+// contractAbi = require("./contract1.json");
 contractAbi = require("./contract.json");
 var currentBlockNumber = readLastInput("ScannedBlocks.js");
 isStarted = false;
