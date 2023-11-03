@@ -14,7 +14,7 @@ const rpc_url = process.env.RPC_URL;
 const rpc_url2 = process.env.RPC_URL2;
 alternate_rpc_time_interval = 5 * 60 * 60 * 1000;
 
-let rpc_in_use = rpc_url;
+let rpc_in_use = rpc_url2;
 
 function alternate_rpc() {
   if (rpc_in_use == rpc_url) {
