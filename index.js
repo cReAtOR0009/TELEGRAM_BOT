@@ -17,7 +17,7 @@ alternate_rpc_time_interval = 5 * 60 * 60 * 1000;
 let rpc_in_use = rpc_url;
 setInterval(alternate_rpc, alternate_rpc_time_interval);
 let _web3 = new web3(new web3.providers.HttpProvider(rpc_in_use));
-const TELEGRAM_BOT_TOKEN = process.env.TOKEN;
+const TELEGRAM_BOT_TOKEN = process.env.ORIGINAL_TOKEN;
 const allowedAdminId = Number(process.env.ALLOWED_USER_ID);
 eventDecodeLog = [
   [
