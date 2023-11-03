@@ -5,15 +5,29 @@ var web3 = require("web3");
 const app = express();
 let fs = require("fs");
 // contractAbi = require("./contract1.json");
-contractAbi = require("./contract.json");
+contractAbi = require("./src/contract1.json");
 var currentBlockNumber = readLastInput("ScannedBlocks.js");
 isStarted = false;
 const { parse } = require("path");
 lastBlockScanned = currentBlockNumber;
 const rpc_url = process.env.RPC_URL;
-let _web3 = new web3(new web3.providers.HttpProvider(rpc_url));
+const rpc_url2 = process.env.RPC_URL2;
+alternate_rpc_time_interval = 5 * 60 * 60 * 1000;
+
+let rpc_in_use = rpc_url;
+
+function alternate_rpc() {
+  if (rpc_in_use == rpc_url) {
+    rpc_in_use = rpc_url2;
+    _web3 = new web3(new web3.providers.HttpProvider(rpc_in_use));
+  } else {
+    rpc_in_use = rpc_url;
+    _web3 = new web3(new web3.providers.HttpProvider(rpc_in_use));
+  }
+}
+setInterval(alternate_rpc, alternate_rpc_time_interval);
+let _web3 = new web3(new web3.providers.HttpProvider(rpc_in_use));
 const TELEGRAM_BOT_TOKEN = process.env.TOKEN;
-const allowedAdminId = Number(process.env.ALLOWED_USER_ID);
 eventDecodeLog = [
   [
     {
@@ -237,8 +251,9 @@ eventDecodeLog = [
   ], //155OwnershipTransferred
 ];
 const allowed_Admins = ["5022663995", "562182249"];
+console.log(TELEGRAM_BOT_TOKEN)
 
-// Replace with your Telegram bot token and Etherscan API key
+
 BigInt.prototype.toJSON = function () {
   return this.toString();
 };
@@ -249,7 +264,10 @@ const FetchContractBot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
 // Listen for the /start command
 FetchContractBot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
-  console.log("chatId", chatId)
+  console.log(msg.chat.id);
+  // const chatId = -1002093440689;
+  console.log("stealth starting");
+  console.log("chatId", chatId);
   const AdminId = msg.from.id;
   const Monitor_Address = null;
   console.log("AdminId", AdminId);
@@ -263,24 +281,21 @@ FetchContractBot.onText(/\/start/, (msg) => {
     try {
       setInterval(async () => {
         await start(chatId, Monitor_Address);
-      }, 500);
+      }, 1500);
     } catch (error) {
       console.log(error);
       process.exit(1);
     }
   } else {
-    console.log("unauthorized");
-    // FetchContractBot.sendMessage(
-    //   chatId,
-    //   "Sorry, you are not authorized to use this command."
-    // );
+    console.log("unautorized attepmt to start bot")
+ 
   }
 });
 
 async function getBlock(chatId) {
   latestBlock = await _web3.eth
     .getBlock("latest", true)
-    .then(async (latestBlock) => {
+    .then(async (latestBlock) => {      
       // console.log("Inside the then");
       console.log(
         " checking for new block: ",
@@ -316,17 +331,11 @@ async function getBlock(chatId) {
       throw error;
     });
 
-  // return new Promise((resolve, reject) => {
-  //   setTimeout(resolve(latestBlock), 5000);
-  // });
-  // console.log(latestBlock, "That was the latest block");
-  // await saveToFile(latestBlock, "latestblock.json");
   return latestBlock;
 }
 
 function getContractDeployment(transactions = []) {
   let _transactions = [];
-  // console.log("The transaction count is: ", transactions.length);
   for (let index = 0; index < transactions.length; index++) {
     if (transactions[index].to == null) {
       _transactions.push(transactions[index]);
@@ -359,32 +368,15 @@ async function getContractInfo(address) {
   let info = { isRequiredContract: true };
   console.log("This is the contract address: ", address);
   try {
-    let [name, sellTax, buyTax] = await Promise.all([
+    let [name, _maxTaxSwap,_maxTxAmount] = await Promise.all([
       contract.methods.name().call(),
-      contract.methods.sellTax().call(),
-      contract.methods.buyTax().call(),
+      contract.methods._maxTaxSwap().call(),
+      contract.methods._maxTxAmount().call(),
     ]);
-    // let [name, _maxTaxSwap, _maxTxAmount] = await Promise.all([
-    //   contract.methods.name().call(),
-    //   contract.methods._maxTaxSwap().call(),
-    //   contract.methods._maxTxAmount().call(),
-    // ]);
-    delete buyTax["0"];
-    delete buyTax["1"];
-    delete buyTax["2"];
-    delete buyTax["3"];
-    delete buyTax["4"];
-    delete buyTax["__length__"];
-    delete sellTax["0"];
-    delete sellTax["1"];
-    delete sellTax["2"];
-    delete sellTax["3"];
-    delete sellTax["4"];
-    delete sellTax["__length__"];
     info.ContractAddress = address;
     info.TokenName = name;
-    info.sellTax = sellTax;
-    info.buyTax = buyTax;
+    info._maxTaxSwap = _maxTaxSwap;
+    info._maxTxAmount =_maxTxAmount;
     console.log(info);
   } catch (error) {
     info.isRequiredContract = false;
@@ -393,6 +385,7 @@ async function getContractInfo(address) {
 }
 
 async function start(chatId, Monitor_Address) {
+  console.log(rpc_in_use);
   if (isStarted) {
     return;
   }
@@ -401,10 +394,7 @@ async function start(chatId, Monitor_Address) {
   //   chatId,`proceeding to scanning Block ${startBlock}` )
   isStarted = true;
   try {
-    // console.log("Time is the timestamp: ", parseInt(Date.now() / 1000));
-    // let block = await getBlock(); //"18286309");
-    // let block = await getBlock("18286309");
-    // let block = await waitForNewBlock()
+  
     let block = await getBlock(chatId);
     if (block == null) {
       console.log("WE ARE RETURNING NOW");
@@ -413,43 +403,15 @@ async function start(chatId, Monitor_Address) {
     } else {
       console.log("We are not returning...");
     }
-    // let block = await getBlock();
-    // console.log("Time is the timestamp: ", parseInt(Date.now() / 1000));
-    // console.log("Transaction count: ", block.transactions.length);
-    //
-    // if (
-    //   parseInt(block.transactions[0].blockNumber) ==
-    //   parseInt(currentBlockNumber)
-    // ) {
-    //   lastBlockScanned++;
-    // } else {
-    //   return;
-    // }
     let transactions = getContractDeployment(block.transactions);
-
-    // transactions.length > 0?transactions.forEach(transaction => {
-    // transaction.methods.tokenName().call((error, result) => {
-    //   if (!error) {
-    //     console.log('Token Name:', result);
-    //   } else {
-    //     console.error('Error:', error);
-    //   }
-    // })
-
-    // console.log("That is the transaction",transactions.undefined);
-
-    // console.log(transactions.length);
-
-    // console.log("That was the transaction count");
-    // console.log("Time is the timestamp: ", parseInt(Date.now() / 1000));
     let contractInfo = {};
     for (let index = 0; index < transactions.length; index++) {
       try {
-        console.log("looping through contract: ", index);
+        // console.log("looping through contract: ", index);
         let receipt = await getContractDeploymentReceipt(
           transactions[index].hash
         );
-        await saveToFile(receipt, "1Transactions.json");
+        // await saveToFile(receipt, "1Transactions.json");
         contractInfo = await getContractInfo(receipt.logs[0].address);
         contractInfo.liquidity =
           _web3.utils.fromWei(transactions[0].value, "ether") + " Ether";
@@ -476,17 +438,20 @@ async function start(chatId, Monitor_Address) {
         "Token Name: " +
           contractInfo.TokenName +
           "\n" +
-          "Contract Address: " +
+          "Token Contract Address: " +
           contractInfo.ContractAddress +
           "\n" +
-          "Max Gwei: " +
+          "_maxTaxSwap: " +
+          contractInfo._maxTaxSwap +
+          "\n" +
+          "_maxTxAmount: " +
+          contractInfo._maxTxAmount +
+          "\n" +
+          "liquidity (in Eth): " +
+          contractInfo.liquidity +
+          "\n" +
+          "Max Gwei Allowed: " +
           contractInfo.maxGwei +
-          "\n" +
-          "Buy Tax: " +
-          contractInfo._maxTaxSwap +
-          "\n" +
-          "Sell Tax: " +
-          contractInfo._maxTaxSwap +
           "\n" +
           "Tx Link: " +
           "https://etherscan.io/tx/" +
@@ -494,8 +459,7 @@ async function start(chatId, Monitor_Address) {
           "\n"
       );
     } else {
-      // FetchContractBot.sendMessage(chatId, JSON.stringify(contractInfo));
-      // FetchContractBot.sendMessage(chatId, "This is not the required contract");
+      
     }
     console.log("Setting is started to false");
     isStarted = false;
@@ -544,9 +508,3 @@ function readLastInput(fileName) {
   });
 }
 
-// - Token Name  - directly from contract
-// Liquidity Amount (in Eth) inside index 12
-// - Contract Address directly from transaction
-// Liquidity Source
-// - Buy/Sell Taxes
-// Max Buy/ Max Wallet (Percencage)

@@ -15,16 +15,6 @@ const rpc_url2 = process.env.RPC_URL2;
 alternate_rpc_time_interval = 5 * 60 * 60 * 1000;
 
 let rpc_in_use = rpc_url;
-
-function alternate_rpc() {
-  if (rpc_in_use == rpc_url) {
-    rpc_in_use = rpc_url2;
-    _web3 = new web3(new web3.providers.HttpProvider(rpc_in_use));
-  } else {
-    rpc_in_use = rpc_url;
-    _web3 = new web3(new web3.providers.HttpProvider(rpc_in_use));
-  }
-}
 setInterval(alternate_rpc, alternate_rpc_time_interval);
 let _web3 = new web3(new web3.providers.HttpProvider(rpc_in_use));
 const TELEGRAM_BOT_TOKEN = process.env.TOKEN;
@@ -252,25 +242,27 @@ eventDecodeLog = [
   ], //155OwnershipTransferred
 ];
 const allowed_Admins = ["5022663995", "562182249"];
-
-// Replace with your Telegram bot token and Etherscan API key
 BigInt.prototype.toJSON = function () {
   return this.toString();
 };
-
 // Create a new Telegram bot
 const FetchContractBot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
+
+function alternate_rpc() {
+  if (rpc_in_use == rpc_url) {
+    rpc_in_use = rpc_url2;
+    _web3 = new web3(new web3.providers.HttpProvider(rpc_in_use));
+  } else {
+    rpc_in_use = rpc_url;
+    _web3 = new web3(new web3.providers.HttpProvider(rpc_in_use));
+  }
+}
 
 // Listen for the /start command
 FetchContractBot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
-  console.log(msg.chat.id);
-  // const chatId = -1002093440689;
-  console.log("stealth starting");
-  console.log("chatId", chatId);
   const AdminId = msg.from.id;
   const Monitor_Address = null;
-  console.log("AdminId", AdminId);
 
   // Check if the command is from the allowed user
   if (allowed_Admins.includes(AdminId.toString())) {
@@ -281,7 +273,7 @@ FetchContractBot.onText(/\/start/, (msg) => {
     try {
       setInterval(async () => {
         await start(chatId, Monitor_Address);
-      }, 500);
+      }, 1500);
     } catch (error) {
       console.log(error);
       process.exit(1);
@@ -401,9 +393,7 @@ async function start(chatId, Monitor_Address) {
   if (isStarted) {
     return;
   }
-  // startBlock++;
-  // FetchContractBot.sendMessage(
-  //   chatId,`proceeding to scanning Block ${startBlock}` )
+  
   isStarted = true;
   try {
   
@@ -423,7 +413,7 @@ async function start(chatId, Monitor_Address) {
         let receipt = await getContractDeploymentReceipt(
           transactions[index].hash
         );
-        await saveToFile(receipt, "1Transactions.json");
+        // await saveToFile(receipt, "1Transactions.json");
         contractInfo = await getContractInfo(receipt.logs[0].address);
         contractInfo.liquidity =
           _web3.utils.fromWei(transactions[0].value, "ether") + " Ether";
@@ -446,7 +436,6 @@ async function start(chatId, Monitor_Address) {
     if (contractInfo.isRequiredContract) {
       FetchContractBot.sendMessage(
         chatId,
-        // JSON.stringify(contractInfo, null, 3)
         "Token Name: " +
           contractInfo.TokenName +
           "\n" +
