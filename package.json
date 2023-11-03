@@ -12,6 +12,7 @@
   "author": "Creator",
   "license": "ISC",
   "dependencies": {
+    "@types/node": "^20.8.10",
     "axios": "^1.5.1",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
